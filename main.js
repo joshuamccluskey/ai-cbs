@@ -18,19 +18,30 @@ async function genEmbed(text) {
             throw new Error(`Failed see status code ${response.status} : ${response.data}`);
         }
 
-        console.log(response.data);
+        return response.data;
     } catch (error) {
         console.error(error);
     }
 };
 
-genEmbed('Hello World! MongoDB!');
+//genEmbed('Hello World! MongoDB!');
 
 async function main() {
     try {
         await client.connect();
-        await client.db('admin').command({ ping:1 });
         console.log("🍃 Pinged! Connected to MongoDB! 🍃");
+        const db = client.db('sample_mflix');
+        const collection = db.collection('movies');
+
+        const docs = await collection.find({ 'plot': { '$exists': true}}).limit(100).toArray();
+
+        for (let doc of docs) {
+            doc.plot_embedding_hf = await genEmbed(doc.plot);
+            await collection.replaceOne({'_id': doc._id}, doc);
+            console.log(`🤙 Updated ${doc._id}`);
+        };
+        
+        
 
     } finally {
         console.log("Connection closing ... 🛬");
@@ -38,4 +49,4 @@ async function main() {
     }
 };
 
-//main().catch(console.dir);
+main().catch(console.dir);
