@@ -24,29 +24,64 @@ async function genEmbed(text) {
     }
 };
 
-//genEmbed('Hello World! MongoDB!');
-
-async function main() {
+async function queryEmbed (query) {
     try {
         await client.connect();
         console.log("🍃 Pinged! Connected to MongoDB! 🍃");
         const db = client.db('sample_mflix');
         const collection = db.collection('movies');
 
-        const docs = await collection.find({ 'plot': { '$exists': true}}).limit(100).toArray();
+        results = await collection.aggregate([
+            {
+                $vectorSearch: {
+                    index: "PlotSemanticsSearch",
+                    "queryVector": await genEmbed(query),
+                    "path": "plot_embedding_hf",
+                    "numCandidates": 100,
+                    "limit": 5,
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    title: 1,
+                    plot:1,
+                },
+            }
+        ]).toArray();
 
-        for (let doc of docs) {
-            doc.plot_embedding_hf = await genEmbed(doc.plot);
-            await collection.replaceOne({'_id': doc._id}, doc);
-            console.log(`🤙 Updated ${doc._id}`);
-        };
-        
-        
-
+        console.log(results);
     } finally {
         console.log("Connection closing ... 🛬");
         await client.close();
     }
 };
 
-main().catch(console.dir);
+const query = "Training day overcoming the hurdles of the minutae of life";
+queryEmbed(query).catch(console.dir);
+
+// async function saveEmbed() {
+//     try {
+//         await client.connect();
+//         console.log("🍃 Pinged! Connected to MongoDB! 🍃");
+//         const db = client.db('sample_mflix');
+//         const collection = db.collection('movies');
+
+//         const docs = await collection.find({ 'plot': { '$exists': true}}).limit(100).toArray();
+
+//         for (let doc of docs) {
+//             doc.plot_embedding_hf = await genEmbed(doc.plot);
+//             await collection.replaceOne({'_id': doc._id}, doc);
+//             console.log(`🤙 Updated ${doc._id}`);
+//         };
+        
+        
+
+//     } finally {
+//         console.log("Connection closing ... 🛬");
+//         await client.close();
+//     }
+// };
+
+// saveEmbed().catch(console.dir);
+
