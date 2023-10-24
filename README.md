@@ -8,3 +8,5 @@
 - ![Connection to MongoDB](/snapshots/Screenshot%202023-10-23%20at%208.23.54%20PM.png)
 - 10.23.23 Interated Hugging Face Integrated Axios Embedding working
 - ![Text Embedding](/snapshots/Screenshot%202023-10-23%20at%208.24.23%20PM.png)
+- 10.23.23 Embedded documents in sample_mflix database
+- ![Updated embedded collection](/snapshots/Screenshot%202023-10-23%20at%208.59.05%20PM.png)
